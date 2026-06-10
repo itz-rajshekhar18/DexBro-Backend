@@ -46,11 +46,20 @@ type RazorpayOrderResponse struct {
 // CreatePaymentOrder creates a Razorpay order
 // POST /api/v1/payment/create-order
 func CreatePaymentOrder(c *gin.Context) {
+	// Read raw body for debugging
+	bodyBytes, _ := c.GetRawData()
+	log.Printf("=== RAW REQUEST BODY ===")
+	log.Printf("%s", string(bodyBytes))
+	log.Printf("========================")
+	
+	// Reset the body so it can be read again
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+	
 	var registration models.Registration
 	
 	// Bind JSON request
 	if err := c.ShouldBindJSON(&registration); err != nil {
-		log.Printf("Validation error: %v", err)
+		log.Printf("JSON binding error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Invalid request data. Please check all required fields.",
@@ -60,8 +69,18 @@ func CreatePaymentOrder(c *gin.Context) {
 		return
 	}
 
+	// Log what was parsed
+	log.Printf("=== PARSED DATA ===")
+	log.Printf("Name: '%s' (len=%d)", registration.Name, len(registration.Name))
+	log.Printf("Email: '%s' (len=%d)", registration.Email, len(registration.Email))
+	log.Printf("Phone: '%s' (len=%d)", registration.Phone, len(registration.Phone))
+	log.Printf("Grade: '%s' (len=%d)", registration.Grade, len(registration.Grade))
+	log.Printf("Experience: '%s' (len=%d)", registration.Experience, len(registration.Experience))
+	log.Printf("===================")
+
 	// Validate required fields explicitly
 	if registration.Name == "" {
+		log.Printf("Validation failed: Name is empty")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Name is required",
@@ -69,6 +88,7 @@ func CreatePaymentOrder(c *gin.Context) {
 		return
 	}
 	if registration.Email == "" {
+		log.Printf("Validation failed: Email is empty")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Email is required",
@@ -76,6 +96,7 @@ func CreatePaymentOrder(c *gin.Context) {
 		return
 	}
 	if registration.Phone == "" {
+		log.Printf("Validation failed: Phone is empty")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Phone is required",
@@ -83,6 +104,7 @@ func CreatePaymentOrder(c *gin.Context) {
 		return
 	}
 	if registration.Grade == "" {
+		log.Printf("Validation failed: Grade is empty")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Grade is required",
@@ -90,6 +112,7 @@ func CreatePaymentOrder(c *gin.Context) {
 		return
 	}
 	if registration.Experience == "" {
+		log.Printf("Validation failed: Experience is empty")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Experience level is required",
