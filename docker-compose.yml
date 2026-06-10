@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:7.0
+    container_name: dexbro-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: dexbro_workshop
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - dexbro-network
+
+  # Backend API service
+  backend:
+    build: .
+    container_name: dexbro-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=dexbro_workshop
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - mongodb
+    networks:
+      - dexbro-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  dexbro-network:
+    driver: bridge
