@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -45,6 +46,13 @@ type RazorpayOrderResponse struct {
 // CreatePaymentOrder creates a Razorpay order
 // POST /api/v1/payment/create-order
 func CreatePaymentOrder(c *gin.Context) {
+	// Log the incoming request for debugging
+	bodyBytes, _ := c.GetRawData()
+	log.Printf("Received payment order request: %s", string(bodyBytes))
+	
+	// Recreate the body for binding
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+	
 	var registration models.Registration
 	
 	// Bind JSON request
@@ -54,6 +62,7 @@ func CreatePaymentOrder(c *gin.Context) {
 			"success": false,
 			"message": "Invalid request data. Please check all required fields.",
 			"error":   err.Error(),
+			"details": "Required: name, email, phone, grade, experience",
 		})
 		return
 	}
@@ -100,6 +109,8 @@ func CreatePaymentOrder(c *gin.Context) {
 		registration.Interests = []string{}
 	}
 
+	log.Printf("Creating payment order for: %s (%s)", registration.Name, registration.Email)
+
 	// Generate unique order ID
 	orderID := primitive.NewObjectID().Hex()
 	
@@ -137,6 +148,8 @@ func CreatePaymentOrder(c *gin.Context) {
 	}
 
 	registration.ID = result.InsertedID.(primitive.ObjectID)
+
+	log.Printf("Payment order created successfully: %s", razorpayOrderID)
 
 	// Return payment order details
 	c.JSON(http.StatusOK, models.PaymentOrderResponse{
@@ -301,4 +314,67 @@ func verifyPaymentSignature(orderID, paymentID, signature string) bool {
 	expectedSignature := hex.EncodeToString(h.Sum(nil))
 
 	return hmac.Equal([]byte(expectedSignature), []byte(signature))
+}
+
+
+// DebugPaymentRequest helps debug what data is being received
+// POST /api/v1/payment/debug
+func DebugPaymentRequest(c *gin.Context) {
+	// Get raw body
+	bodyBytes, err := c.GetRawData()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Failed to read request body",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// Try to parse as JSON
+	var data map[string]interface{}
+	if err := json.Unmarshal(bodyBytes, &data); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid JSON",
+			"error":   err.Error(),
+			"rawBody": string(bodyBytes),
+		})
+		return
+	}
+
+	// Try to bind to registration model
+	var registration models.Registration
+	if err := json.Unmarshal(bodyBytes, &registration); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success":     true,
+			"message":     "Debug info",
+			"receivedData": data,
+			"parseError":  err.Error(),
+		})
+		return
+	}
+
+	// Show what was received and parsed
+	c.JSON(http.StatusOK, gin.H{
+		"success":      true,
+		"message":      "Debug info",
+		"receivedData": data,
+		"parsedAs": gin.H{
+			"name":       registration.Name,
+			"email":      registration.Email,
+			"phone":      registration.Phone,
+			"grade":      registration.Grade,
+			"experience": registration.Experience,
+			"interests":  registration.Interests,
+			"message":    registration.Message,
+		},
+		"validation": gin.H{
+			"name_valid":       registration.Name != "",
+			"email_valid":      registration.Email != "",
+			"phone_valid":      registration.Phone != "",
+			"grade_valid":      registration.Grade != "",
+			"experience_valid": registration.Experience != "",
+		},
+	})
 }

@@ -36,6 +36,7 @@ func SetupRoutes(router *gin.Engine) {
 			payment.POST("/create-order", controllers.CreatePaymentOrder)
 			payment.POST("/verify", controllers.VerifyPayment)
 			payment.GET("/status/:orderId", controllers.GetPaymentStatus)
+			payment.POST("/debug", controllers.DebugPaymentRequest) // Debug endpoint
 		}
 	}
 
