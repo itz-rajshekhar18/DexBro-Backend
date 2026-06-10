@@ -46,13 +46,6 @@ type RazorpayOrderResponse struct {
 // CreatePaymentOrder creates a Razorpay order
 // POST /api/v1/payment/create-order
 func CreatePaymentOrder(c *gin.Context) {
-	// Log the incoming request for debugging
-	bodyBytes, _ := c.GetRawData()
-	log.Printf("Received payment order request: %s", string(bodyBytes))
-	
-	// Recreate the body for binding
-	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	
 	var registration models.Registration
 	
 	// Bind JSON request
@@ -285,17 +278,22 @@ func createRazorpayOrder(orderID string, amount int) (string, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to call Razorpay API: %v", err)
 	}
 	defer resp.Body.Close()
 
+	// Read response body for debugging
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	log.Printf("Razorpay API response status: %d, body: %s", resp.StatusCode, string(bodyBytes))
+
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("razorpay API returned status: %d", resp.StatusCode)
+		return "", fmt.Errorf("razorpay API returned status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
+	// Parse response
 	var orderResponse RazorpayOrderResponse
-	if err := json.NewDecoder(resp.Body).Decode(&orderResponse); err != nil {
-		return "", err
+	if err := json.Unmarshal(bodyBytes, &orderResponse); err != nil {
+		return "", fmt.Errorf("failed to parse Razorpay response: %v", err)
 	}
 
 	return orderResponse.ID, nil
