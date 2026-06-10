@@ -49,12 +49,55 @@ func CreatePaymentOrder(c *gin.Context) {
 	
 	// Bind JSON request
 	if err := c.ShouldBindJSON(&registration); err != nil {
+		log.Printf("Validation error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message": "Invalid request data",
+			"message": "Invalid request data. Please check all required fields.",
 			"error":   err.Error(),
 		})
 		return
+	}
+
+	// Validate required fields explicitly
+	if registration.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Name is required",
+		})
+		return
+	}
+	if registration.Email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Email is required",
+		})
+		return
+	}
+	if registration.Phone == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Phone is required",
+		})
+		return
+	}
+	if registration.Grade == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Grade is required",
+		})
+		return
+	}
+	if registration.Experience == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Experience level is required",
+		})
+		return
+	}
+
+	// Initialize empty array for interests if nil
+	if registration.Interests == nil {
+		registration.Interests = []string{}
 	}
 
 	// Generate unique order ID

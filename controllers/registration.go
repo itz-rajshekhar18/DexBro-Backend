@@ -29,6 +29,11 @@ func CreateRegistration(c *gin.Context) {
 		return
 	}
 
+	// Initialize empty array for interests if nil
+	if registration.Interests == nil {
+		registration.Interests = []string{}
+	}
+
 	// Set timestamps
 	registration.CreatedAt = time.Now()
 	registration.UpdatedAt = time.Now()
