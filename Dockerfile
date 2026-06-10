@@ -30,10 +30,7 @@ WORKDIR /root/
 # Copy the binary from builder
 COPY --from=builder /app/main .
 
-# Copy .env file (optional)
-COPY .env .env
-
-# Expose port
+# Expose port (Render will assign PORT dynamically)
 EXPOSE 8080
 
 # Run the application
