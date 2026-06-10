@@ -40,11 +40,18 @@ func main() {
 	router := gin.Default()
 
 	// CORS configuration
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{getEnv("FRONTEND_URL", "http://localhost:3000")}
-	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
-	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
-	corsConfig.AllowCredentials = true
+	corsConfig := cors.Config{
+		AllowOrigins:     []string{
+			"http://localhost:3000",
+			"https://dexbro-workshop.vercel.app",
+			getEnv("FRONTEND_URL", "http://localhost:3000"),
+		},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}
 
 	router.Use(cors.New(corsConfig))
 
