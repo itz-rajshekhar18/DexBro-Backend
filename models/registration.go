@@ -9,11 +9,11 @@ import (
 // Registration represents a workshop registration
 type Registration struct {
 	ID              primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name            string             `json:"name" bson:"name" binding:"required"`
-	Email           string             `json:"email" bson:"email" binding:"required,email"`
-	Phone           string             `json:"phone" bson:"phone" binding:"required"`
-	Grade           string             `json:"grade" bson:"grade" binding:"required"`
-	Experience      string             `json:"experience" bson:"experience" binding:"required"`
+	Name            string             `json:"name" bson:"name"`
+	Email           string             `json:"email" bson:"email"`
+	Phone           string             `json:"phone" bson:"phone"`
+	Grade           string             `json:"grade" bson:"grade"`
+	Experience      string             `json:"experience" bson:"experience"`
 	Interests       []string           `json:"interests" bson:"interests"`
 	Message         string             `json:"message" bson:"message"`
 	PaymentStatus   string             `json:"payment_status" bson:"payment_status"` // pending, success, failed
