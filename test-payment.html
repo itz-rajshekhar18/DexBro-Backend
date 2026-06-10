@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DexBro Workshop - Payment Test</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .price {
+            text-align: center;
+            font-size: 32px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item input {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .note {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 DexBro Workshop Registration</h1>
+        <div class="price">₹750</div>
+
+        <div class="note">
+            <strong>Test Mode:</strong> Use card <code>4111 1111 1111 1111</code> or UPI <code>success@razorpay</code>
+        </div>
+
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number *</label>
+                <input type="tel" id="phone" placeholder="+91 9876543210" required>
+            </div>
+
+            <div class="form-group">
+                <label for="grade">Grade *</label>
+                <select id="grade" required>
+                    <option value="">Select Grade</option>
+                    <option value="6">6th</option>
+                    <option value="7">7th</option>
+                    <option value="8">8th</option>
+                    <option value="9">9th</option>
+                    <option value="10">10th</option>
+                    <option value="11">11th</option>
+                    <option value="12">12th</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="experience">Experience Level *</label>
+                <select id="experience" required>
+                    <option value="">Select Experience</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="some">Some Experience</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Interests (select any):</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ml" value="ml">
+                        <label for="ml">Machine Learning</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="chatbots" value="chatbots">
+                        <label for="chatbots">Chatbots</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="vision" value="vision">
+                        <label for="vision">Computer Vision</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="python" value="python">
+                        <label for="python">Python</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="datascience" value="datascience">
+                        <label for="datascience">Data Science</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="robotics" value="robotics">
+                        <label for="robotics">Robotics</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message (Optional)</label>
+                <textarea id="message" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">
+                Pay ₹750 & Register
+            </button>
+        </form>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        // UPDATE THIS URL TO YOUR DEPLOYED API URL
+        const API_URL = 'http://localhost:8080'; // Change to your Render URL
+        
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                grade: document.getElementById('grade').value,
+                experience: document.getElementById('experience').value,
+                interests: getSelectedInterests(),
+                message: document.getElementById('message').value
+            };
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            hideMessage();
+
+            try {
+                // Step 1: Create payment order
+                const orderResponse = await fetch(`${API_URL}/api/v1/payment/create-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const orderData = await orderResponse.json();
+
+                if (!orderData.success) {
+                    throw new Error(orderData.message || 'Failed to create order');
+                }
+
+                // Step 2: Open Razorpay checkout
+                openRazorpay(orderData.data, formData);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Failed to create payment order: ' + error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Pay ₹750 & Register';
+            }
+        });
+
+        function openRazorpay(orderData, registrationData) {
+            const options = {
+                key: orderData.key_id,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: 'DexBro Workshop',
+                description: 'Workshop Registration Fee',
+                order_id: orderData.razorpay_order_id,
+                prefill: {
+                    name: registrationData.name,
+                    email: registrationData.email,
+                    contact: registrationData.phone
+                },
+                theme: {
+                    color: '#667eea'
+                },
+                handler: async function (response) {
+                    // Payment successful, verify it
+                    await verifyPayment({
+                        order_id: orderData.order_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature
+                    });
+                },
+                modal: {
+                    ondismiss: function() {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Pay ₹750 & Register';
+                        showMessage('Payment cancelled', 'error');
+                    }
+                }
+            };
+
+            const razorpay = new Razorpay(options);
+            razorpay.open();
+        }
+
+        async function verifyPayment(paymentData) {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/payment/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('✅ Payment successful! Registration confirmed.', 'success');
+                    form.reset();
+                } else {
+                    showMessage('❌ Payment verification failed!', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Failed to verify payment: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Pay ₹750 & Register';
+            }
+        }
+
+        function getSelectedInterests() {
+            const interests = [];
+            document.querySelectorAll('.checkbox-item input:checked').forEach(checkbox => {
+                interests.push(checkbox.value);
+            });
+            return interests;
+        }
+
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+        }
+
+        function hideMessage() {
+            messageDiv.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

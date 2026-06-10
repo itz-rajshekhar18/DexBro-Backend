@@ -399,3 +399,263 @@ Potential additions:
 ## Support
 
 For issues or questions, refer to the main README.md or create an issue in the repository.
+
+
+---
+
+## Payment Endpoints
+
+### Create Payment Order
+
+Creates a new registration and Razorpay payment order for ₹750.
+
+**Endpoint:** `POST /api/v1/payment/create-order`
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+91 9876543210",
+  "grade": "10",
+  "experience": "beginner",
+  "interests": ["ml", "python"],
+  "message": "Excited to learn!"
+}
+```
+
+**Success Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Payment order created successfully",
+  "data": {
+    "order_id": "507f1f77bcf86cd799439011",
+    "razorpay_order_id": "order_MNhJ8K9rF3dBpP",
+    "amount": 75000,
+    "currency": "INR",
+    "key_id": "rzp_test_T00UNZvHEBXXK8"
+  }
+}
+```
+
+**Error Response:** `400 Bad Request`
+```json
+{
+  "success": false,
+  "message": "Invalid request data",
+  "error": "validation error details"
+}
+```
+
+---
+
+### Verify Payment
+
+Verifies the Razorpay payment signature and confirms registration.
+
+**Endpoint:** `POST /api/v1/payment/verify`
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "order_id": "507f1f77bcf86cd799439011",
+  "razorpay_order_id": "order_MNhJ8K9rF3dBpP",
+  "razorpay_payment_id": "pay_MNhJ8K9rF3dBpQ",
+  "razorpay_signature": "0b7e38b0e5f3d8c8f2b8a9d8c7e6f5d4c3b2a1b0c9d8e7f6a5b4c3d2e1f0a9b8"
+}
+```
+
+**Success Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Payment verified successfully"
+}
+```
+
+**Error Response:** `400 Bad Request` (Invalid signature)
+```json
+{
+  "success": false,
+  "message": "Invalid payment signature"
+}
+```
+
+**Error Response:** `404 Not Found` (Order not found)
+```json
+{
+  "success": false,
+  "message": "Order not found"
+}
+```
+
+---
+
+### Get Payment Status
+
+Retrieves the payment status for a specific order.
+
+**Endpoint:** `GET /api/v1/payment/status/:orderId`
+
+**URL Parameters:**
+- `orderId`: Internal order ID (from create-order response)
+
+**Success Response:** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "order_id": "507f1f77bcf86cd799439011",
+    "payment_status": "success",
+    "amount": 75000
+  }
+}
+```
+
+**Payment Status Values:**
+- `pending` - Payment order created but not yet paid
+- `success` - Payment completed and verified
+- `failed` - Payment failed
+
+**Error Response:** `404 Not Found`
+```json
+{
+  "success": false,
+  "message": "Order not found"
+}
+```
+
+---
+
+## Payment Integration
+
+### Workshop Fee
+**Amount:** ₹750 (75000 paise)
+
+### Payment Flow
+
+1. **Create Order**: Frontend calls `/api/v1/payment/create-order` with registration details
+2. **Open Razorpay**: Frontend opens Razorpay checkout with returned order details
+3. **User Pays**: User completes payment via Razorpay
+4. **Verify Payment**: Frontend calls `/api/v1/payment/verify` with payment response
+5. **Confirmation**: Backend verifies signature and updates payment status to "success"
+
+### Frontend Integration Example
+
+```javascript
+// Step 1: Create payment order
+const createOrder = async (registrationData) => {
+  const response = await fetch('https://your-api.onrender.com/api/v1/payment/create-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(registrationData),
+  });
+  return await response.json();
+};
+
+// Step 2: Open Razorpay Checkout
+const openRazorpay = (orderData, registrationData) => {
+  const options = {
+    key: orderData.data.key_id,
+    amount: orderData.data.amount,
+    currency: 'INR',
+    name: 'DexBro Workshop',
+    description: 'Workshop Registration Fee',
+    order_id: orderData.data.razorpay_order_id,
+    prefill: {
+      name: registrationData.name,
+      email: registrationData.email,
+      contact: registrationData.phone,
+    },
+    handler: async function (response) {
+      await verifyPayment({
+        order_id: orderData.data.order_id,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature: response.razorpay_signature,
+      });
+    },
+  };
+  
+  const razorpay = new Razorpay(options);
+  razorpay.open();
+};
+
+// Step 3: Verify payment
+const verifyPayment = async (paymentData) => {
+  const response = await fetch('https://your-api.onrender.com/api/v1/payment/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(paymentData),
+  });
+  const result = await response.json();
+  
+  if (result.success) {
+    alert('Registration successful! Payment confirmed.');
+  }
+};
+
+// Complete flow
+const handleRegistration = async (formData) => {
+  const orderData = await createOrder(formData);
+  if (orderData.success) {
+    openRazorpay(orderData, formData);
+  }
+};
+```
+
+### Add Razorpay Script to HTML
+```html
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+```
+
+### Test Cards (Test Mode)
+
+**Success:**
+- Card: `4111 1111 1111 1111`
+- CVV: Any 3 digits
+- Expiry: Any future date
+
+**UPI:**
+- UPI ID: `success@razorpay`
+
+---
+
+## Updated Data Models
+
+### Registration Model (with Payment Fields)
+
+```typescript
+interface Registration {
+  id: string;                    // MongoDB ObjectID
+  name: string;                  // Full name
+  email: string;                 // Email address
+  phone: string;                 // Phone number
+  grade: string;                 // Grade (6-12)
+  experience: string;            // Experience level
+  interests: string[];           // Array of interests
+  message: string;               // Optional message
+  payment_status: string;        // pending | success | failed
+  payment_id: string;            // Razorpay payment ID
+  order_id: string;              // Internal order ID
+  razorpay_order_id: string;     // Razorpay order ID
+  amount: number;                // Amount in paise (75000)
+  created_at: string;            // ISO 8601 timestamp
+  updated_at: string;            // ISO 8601 timestamp
+}
+```
+
+---
+
+For detailed payment integration guide, see [PAYMENT_API.md](./PAYMENT_API.md)

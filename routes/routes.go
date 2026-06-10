@@ -29,6 +29,14 @@ func SetupRoutes(router *gin.Engine) {
 			registrations.GET("/:id", controllers.GetRegistrationByID)
 			registrations.DELETE("/:id", controllers.DeleteRegistration)
 		}
+
+		// Payment routes
+		payment := v1.Group("/payment")
+		{
+			payment.POST("/create-order", controllers.CreatePaymentOrder)
+			payment.POST("/verify", controllers.VerifyPayment)
+			payment.GET("/status/:orderId", controllers.GetPaymentStatus)
+		}
 	}
 
 	// 404 handler
