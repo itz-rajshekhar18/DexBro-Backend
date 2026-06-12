@@ -44,6 +44,7 @@ func main() {
 		AllowOrigins:     []string{
 			"http://localhost:3000",
 			"https://dexbro-workshop.vercel.app",
+			"https://dex-guru-workshop.vercel.app",
 			getEnv("FRONTEND_URL", "http://localhost:3000"),
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
