@@ -40,13 +40,24 @@ func main() {
 	router := gin.Default()
 
 	// CORS configuration
+	// Build allowed origins list
+	allowedOrigins := []string{
+		"http://localhost:3000",
+		"https://dexbro-workshop.vercel.app",
+		"https://dex-guru-workshop.vercel.app",
+		"https://dex-bro-workshop.vercel.app",
+	}
+	
+	// Add URLs from environment variables if they exist
+	if frontendURL := getEnv("FRONTEND_URL", ""); frontendURL != "" {
+		allowedOrigins = append(allowedOrigins, frontendURL)
+	}
+	if dexbroURL := getEnv("FRONTEND_DEXBRO_URL", ""); dexbroURL != "" {
+		allowedOrigins = append(allowedOrigins, dexbroURL)
+	}
+
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{
-			"http://localhost:3000",
-			"https://dexbro-workshop.vercel.app",
-			"https://dex-guru-workshop.vercel.app",
-			getEnv("FRONTEND_URL", "http://localhost:3000"),
-		},
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
